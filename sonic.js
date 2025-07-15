@@ -2,8 +2,21 @@ const menu = [
 {
 name: "settings",
 sub: [
-{name: "cool-boom"},
-{name: "weird"}
+{
+name: "volume",
+enter: () => {
+seek = volume;
+},
+sub: [
+{
+name: "volume",
+row: (dir) => {
+horizontal(dir);
+volume = seek;
+}
+}
+]
+}
 ]
 },
 {
@@ -12,6 +25,8 @@ name: "help"
 ];
 
 var item = 0;
+var seek = 0;
+var volume = 80;
 var level = menu;
 var root = [];
 function opening() {
@@ -25,7 +40,18 @@ if (key.key === "ArrowUp") {
 shift("up");
 } else if (key.key === "ArrowDown") {
 shift("down");
+} else if (key.key === "ArrowLeft") {
+if (level[item].row) {
+level[item].row("left");
+}
+} else if (key.key === "ArrowRight") {
+if (level[item].row) {
+level[item].row("right");
+}
 } else if (key.key === "Enter") {
+if (level[item].enter) {
+level[item].enter;
+}
 if (level[item].sub) {
 root.push(level);
 level = level[item].sub;
@@ -69,6 +95,24 @@ let sound1 = new Howl({
 });
 let sound2 = new Howl({
 	src: ['click.mp3'],
+	autoplay: true
+});
+}
+function horizontal(dir) {
+if (dir === "right") {
+seek += 10;
+} else if (dir === "left") {
+seek -= 10;
+} else {
+console.log("Invalid string given - should be 'right' or 'left'");
+}
+if (seek > 100) {
+seek = 100;
+} else if (seek < 0) {
+seek = 0;
+}
+let sound = new Howl({
+	src: ['volume/'+seek+'.mp3'],
 	autoplay: true
 });
 }
