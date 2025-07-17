@@ -1,5 +1,10 @@
+var playing = [];
+var startup = false;
 var config = {
-volume: 80,
+volume: {
+speech: 60,
+music: 50
+},
 rate: 50
 };
 const menu = [
@@ -7,6 +12,42 @@ const menu = [
 name: "settings",
 config: config,
 sub: [
+{
+name: function () {
+return "speech_volume|volume/"+menu[0].config.volume.speech;
+},
+enter: () => {
+seek = config.volume.speech;
+},
+sub: [
+{
+name: "volume",
+row: (dir) => {
+horizontal(dir);
+config.volume.speech = seek;
+playAudio('volume/'+seek);
+}
+}
+]
+},
+{
+name: function () {
+return "music_volume|volume/"+menu[0].config.volume.music;
+},
+enter: () => {
+seek = config.volume.music;
+},
+sub: [
+{
+name: "music_volume",
+row: (dir) => {
+horizontal(dir);
+config.volume.music = seek;
+playAudio('volume/'+seek);
+}
+}
+]
+},
 {
 name: function () {
 return "rate|volume/"+menu[0].config.rate;
@@ -24,24 +65,6 @@ playAudio('volume/'+seek);
 }
 }
 ]
-},
-{
-name: function () {
-return "volume|volume/"+menu[0].config.volume;
-},
-enter: () => {
-seek = config.volume;
-},
-sub: [
-{
-name: "volume",
-row: (dir) => {
-horizontal(dir);
-config.volume = seek;
-playAudio('volume/'+seek);
-}
-}
-]
 }
 ]
 },
@@ -55,11 +78,20 @@ var seek = 0;
 var level = menu;
 var root = [];
 function opening() {
+var music = new Howl({
+	src: ['main_menu.mp3'],
+	volume: config.volume.music*0.01,
+	loop: true,
+	html5: true,
+	autoplay: true
+});
 playAudio(level[item].name);
 }
 document.addEventListener('keyup', (key) => {
 if (key.key === "Control") {
-Howler.stop();
+playing.forEach((sound) => {
+sound.stop();
+});
 } else if (key.key === "ArrowUp") {
 shift("up");
 } else if (key.key === "ArrowDown") {
@@ -87,6 +119,13 @@ if (root.length !== 0) {
 level = root[root.length - 1];
 root.pop();
 item = 0;
+playAudio(level[item].name);
+}
+} else if (key.key === " ") {
+if (!startup) {
+opening();
+startup = true;
+} else {
 playAudio(level[item].name);
 }
 }
@@ -133,19 +172,22 @@ list = path().split("|");
 } else {
 list = path.split("|");
 }
-Howler.stop();
+playing.forEach((sound) => {
+sound.stop();
+});
 setTimeout(function () {
 let sound = new Howl({
 	src: [list[0]+'.mp3'],
 	html5: true,
-	volume: config.volume*0.01,
+	volume: config.volume.speech*0.01,
 	rate: (config.rate*0.01)+0.5,
 	autoplay: true
 });
+playing.push(sound);
 sound.on('end', () => {
+playing.splice(playing.findIndex(s => s === sound));
 list.shift();
 if (list[0]) {
-console.log(list[0]);
 playAudio(list[0]);
 }
 });
