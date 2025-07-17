@@ -7,6 +7,8 @@ A prototype for audio navigation and games
 * Up and down arrow moves through menus
 * Left and right arrows change the value of a setting
 * Enter opens a menu or selects a setting so that it can be modified
+* Escape goes to the previous menu
+* Space bar says the current item and starts background music if not already started
 
 # Issues
 * Since this project is client-side HTML only, sounds cannot immediately be played upon opening the HTML file, so the currently selected item will not be announced when the HTML loads
