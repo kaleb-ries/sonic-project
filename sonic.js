@@ -1,10 +1,12 @@
 var playing = [];
 var startup = false;
+var music;
 var config = {
 volume: {
 speech: 60,
 music: 50
 },
+music: "on",
 rate: 50
 };
 const menu = [
@@ -14,7 +16,7 @@ config: config,
 sub: [
 {
 name: function () {
-return "speech_volume|volume/"+menu[0].config.volume.speech;
+return "speech_volume|volume/"+config.volume.speech;
 },
 enter: () => {
 seek = config.volume.speech;
@@ -31,8 +33,32 @@ playAudio('volume/'+seek);
 ]
 },
 {
+name: () => {
+return "music|"+config.music;
+},
+enter: () => {
+if (config.music === "on") {
+config.music = "off";
+if (music) {
+music.stop();
+music = null;
+}
+} else {
+config.music = "on";
+music = new Howl({
+	src: ["sounds/main_menu.mp3"],
+	volume: config.volume.music*0.01,
+	loop: true,
+	html5: true,
+	autoplay: true
+});
+}
+playAudio(level[item].name, config.music);
+}
+},
+{
 name: function () {
-return "music_volume|volume/"+menu[0].config.volume.music;
+return "music_volume|volume/"+config.volume.music;
 },
 enter: () => {
 seek = config.volume.music;
@@ -49,8 +75,8 @@ playAudio('volume/'+seek);
 ]
 },
 {
-name: function () {
-return "rate|volume/"+menu[0].config.rate;
+name: () => {
+return "rate|volume/"+config.rate;
 },
 enter: () => {
 seek = config.rate;
@@ -78,15 +104,27 @@ var seek = 0;
 var level = menu;
 var root = [];
 function opening() {
-var music = new Howl({
-	src: ['main_menu.mp3'],
+if (config.music === "on") {
+music = new Howl({
+	src: ['sounds/main_menu.mp3'],
 	volume: config.volume.music*0.01,
 	loop: true,
 	html5: true,
 	autoplay: true
 });
+}
 playAudio(level[item].name);
 }
+let events = ["focus", "keydown", "scroll", "mouseover", "mousemove"];
+events.forEach((e) => {
+document.addEventListener(e, () => {
+if (!startup) {
+opening();
+startup = true;
+}
+});
+});
+
 document.addEventListener('keyup', (key) => {
 if (key.key === "Control") {
 playing.forEach((sound) => {
@@ -177,7 +215,7 @@ sound.stop();
 });
 setTimeout(function () {
 let sound = new Howl({
-	src: [list[0]+'.mp3'],
+	src: ['sounds/'+list[0]+'.mp3'],
 	html5: true,
 	volume: config.volume.speech*0.01,
 	rate: (config.rate*0.01)+0.5,
