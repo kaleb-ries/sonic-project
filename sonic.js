@@ -69,6 +69,7 @@ name: "music_volume",
 row: (dir) => {
 horizontal(dir);
 config.volume.music = seek;
+music.volume(config.volume.music*0.01);
 playAudio('volume/'+seek);
 }
 }
@@ -115,17 +116,9 @@ music = new Howl({
 }
 playAudio(level[item].name);
 }
-let events = ["focus", "keydown", "scroll", "mouseover", "mousemove"];
-events.forEach((e) => {
-document.addEventListener(e, () => {
-if (!startup) {
-opening();
-startup = true;
-}
-});
-});
 
 document.addEventListener('keyup', (key) => {
+if (startup) {
 if (key.key === "Control") {
 playing.forEach((sound) => {
 sound.stop();
@@ -152,6 +145,7 @@ level = level[item].sub;
 item = 0;
 playAudio(level[item].name);
 }
+
 } else if (key.key === "Escape") {
 if (root.length !== 0) {
 level = root[root.length - 1];
@@ -160,11 +154,13 @@ item = 0;
 playAudio(level[item].name);
 }
 } else if (key.key === " ") {
-if (!startup) {
+playAudio(level[item].name);
+}
+} else {
+if (key.key === 'Enter') {
+// alert("Enter pressed");
 opening();
 startup = true;
-} else {
-playAudio(level[item].name);
 }
 }
 });
@@ -222,7 +218,7 @@ let sound = new Howl({
 	autoplay: true
 });
 playing.push(sound);
-sound.on('end', () => {
+sound.once('end', () => {
 playing.splice(playing.findIndex(s => s === sound));
 list.shift();
 if (list[0]) {
