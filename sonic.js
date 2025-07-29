@@ -16,7 +16,7 @@ config: config,
 sub: [
 {
 name: function () {
-return "speech_volume|volume/"+config.volume.speech;
+return "speech_volume|seek/"+config.volume.speech;
 },
 enter: () => {
 seek = config.volume.speech;
@@ -27,7 +27,7 @@ name: "volume",
 row: (dir) => {
 horizontal(dir);
 config.volume.speech = seek;
-playAudio('volume/'+seek);
+playAudio('seek/'+seek);
 }
 }
 ]
@@ -58,7 +58,7 @@ playAudio(level[item].name, config.music);
 },
 {
 name: function () {
-return "music_volume|volume/"+config.volume.music;
+return "music_volume|seek/"+config.volume.music;
 },
 enter: () => {
 seek = config.volume.music;
@@ -69,15 +69,17 @@ name: "music_volume",
 row: (dir) => {
 horizontal(dir);
 config.volume.music = seek;
+if (music) {
 music.volume(config.volume.music*0.01);
-playAudio('volume/'+seek);
+}
+playAudio('seek/'+seek);
 }
 }
 ]
 },
 {
 name: () => {
-return "rate|volume/"+config.rate;
+return "rate|seek/"+config.rate;
 },
 enter: () => {
 seek = config.rate;
@@ -88,7 +90,7 @@ name: "rate",
 row: (dir) => {
 horizontal(dir);
 config.rate = seek;
-playAudio('volume/'+seek);
+playAudio('seek/'+seek);
 }
 }
 ]
@@ -155,6 +157,10 @@ playAudio(level[item].name);
 }
 } else if (key.key === " ") {
 playAudio(level[item].name);
+} else if (key.key === "Backspace") {
+level = menu;
+item = 0;
+playAudio(level[item].name);
 }
 } else {
 if (key.key === 'Enter') {
@@ -214,7 +220,7 @@ let sound = new Howl({
 	src: ['sounds/'+list[0]+'.mp3'],
 	html5: true,
 	volume: config.volume.speech*0.01,
-	rate: (config.rate*0.01)+0.5,
+	rate: (config.rate*(1*0.01))+1,
 	autoplay: true
 });
 playing.push(sound);
@@ -226,4 +232,7 @@ playAudio(list[0]);
 }
 });
 }, 1);
+
 }
+
+
