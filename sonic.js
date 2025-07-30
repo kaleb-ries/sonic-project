@@ -121,23 +121,29 @@ playAudio(level[item].name);
 
 document.addEventListener('keyup', (key) => {
 if (startup) {
-if (key.key === "Control") {
+switch (key.key) {
+case 'Control':
 playing.forEach((sound) => {
 sound.stop();
 });
-} else if (key.key === "ArrowUp") {
+break;
+case 'ArrowUp':
 shift("up");
-} else if (key.key === "ArrowDown") {
+break;
+case 'ArrowDown':
 shift("down");
-} else if (key.key === "ArrowLeft") {
+break;
+case 'ArrowLeft':
 if (level[item].row) {
 level[item].row("left");
 }
-} else if (key.key === "ArrowRight") {
+break;
+case 'ArrowRight':
 if (level[item].row) {
 level[item].row("right");
 }
-} else if (key.key === "Enter") {
+break;
+case 'Enter':
 if (level[item].enter) {
 level[item].enter();
 }
@@ -147,20 +153,43 @@ level = level[item].sub;
 item = 0;
 playAudio(level[item].name);
 }
-
-} else if (key.key === "Escape") {
+break;
+case 'Escape':
 if (root.length !== 0) {
 level = root[root.length - 1];
 root.pop();
 item = 0;
 playAudio(level[item].name);
 }
-} else if (key.key === " ") {
+break;
+case ' ':
 playAudio(level[item].name);
-} else if (key.key === "Backspace") {
+break;
+case 'Backspace':
 level = menu;
 item = 0;
 playAudio(level[item].name);
+break;
+case 'Home':
+item = 0;
+playAudio(level[item].name);
+break;
+case 'End':
+item = level.length - 1;
+playAudio(level[item].name);
+break;
+case 'PageDown':
+(level.length-1)-item > 4 ?
+	item += 5 :
+	item = level.length - 1
+playAudio(level[item].name);
+break;
+case 'PageUp':
+item > 4 ?
+	item -= 5 :
+	item = 0
+playAudio(level[item].name);
+break;
 }
 } else {
 if (key.key === 'Enter') {

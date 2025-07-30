@@ -13,6 +13,10 @@ In order to start the interface when the html file is running in the browser, th
 * Escape goes to the previous menu
 * Backspace goes to the main menu
 * Space bar says the current item
+* Home goes to the top of a menu
+* End goes to the bottom of the menu
+* Page up goes up in a menu by 5 items
+* Page down goes down in a menu by 5 items
 
 # Issues
 * Visual elements have not been added, and there is no guide to navigating the audio interface
