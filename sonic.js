@@ -1,3 +1,18 @@
+const menu = [];
+const Item = (name) => {
+return {name: name};
+}
+const Append = (data, ...item) => {
+if (Array.isArray(data)) {
+item.forEach((i) => {
+data.push(i);
+});
+} else {
+console.log('Error: This function only supports the appending of items to an array');
+}
+}
+
+const display = document.getElementById('display');
 var playing = [];
 var startup = false;
 var music;
@@ -9,34 +24,41 @@ music: 50
 music: "on",
 rate: 50
 };
-const menu = [
-{
-name: "settings",
-config: config,
-sub: [
-{
-name: function () {
+
+let game = Item('game');
+let settings = Item('settings');
+let help = Item('help');
+Append(menu, game, settings, help);
+game.sub = [];
+let object_picker = Item('object_picker');
+Append(game.sub, object_picker);
+settings.sub = [];
+let speech_volume = Item(() => {
 return "speech_volume|seek/"+config.volume.speech;
-},
-enter: () => {
+});
+let music_switch = Item(() => {
+return "music|"+config.music;
+});
+let music_volume = Item(() => {
+return "music_volume|seek/"+config.volume.music;
+});
+let speaking_rate = Item(() => {
+return "rate|seek/"+config.rate;
+});
+Append(settings.sub, speech_volume, music_switch, music_volume, speaking_rate);
+speech_volume.enter = () => {
 seek = config.volume.speech;
-},
-sub: [
-{
-name: "volume",
-row: (dir) => {
+}
+speech_volume.sub = [];
+let sp_volume = Item('volume');
+sp_volume.row = (dir) => {
 horizontal(dir);
 config.volume.speech = seek;
 playAudio('seek/'+seek);
 }
-}
-]
-},
-{
-name: () => {
-return "music|"+config.music;
-},
-enter: () => {
+
+Append(speech_volume.sub, sp_volume);
+music_switch.enter = () => {
 if (config.music === "on") {
 config.music = "off";
 if (music) {
@@ -55,18 +77,13 @@ music = new Howl({
 }
 playAudio(level[item].name, config.music);
 }
-},
-{
-name: function () {
-return "music_volume|seek/"+config.volume.music;
-},
-enter: () => {
+music_volume.enter = () => {
 seek = config.volume.music;
-},
-sub: [
-{
-name: "music_volume",
-row: (dir) => {
+}
+music_volume.sub = [];
+let m_volume = Item('music_volume');
+Append(music_volume.sub, m_volume);
+m_volume.row = (dir) => {
 horizontal(dir);
 config.volume.music = seek;
 if (music) {
@@ -74,33 +91,17 @@ music.volume(config.volume.music*0.01);
 }
 playAudio('seek/'+seek);
 }
-}
-]
-},
-{
-name: () => {
-return "rate|seek/"+config.rate;
-},
-enter: () => {
+speaking_rate.enter = () => {
 seek = config.rate;
-},
-sub: [
-{
-name: "rate",
-row: (dir) => {
+}
+speaking_rate.sub = [];
+let rate = Item('rate');
+rate.row = (dir) => {
 horizontal(dir);
 config.rate = seek;
 playAudio('seek/'+seek);
 }
-}
-]
-}
-]
-},
-{
-name: "help"
-}
-];
+Append(speaking_rate.sub, rate);
 
 var item = 0;
 var seek = 0;
@@ -244,6 +245,7 @@ list = path.split("|");
 playing.forEach((sound) => {
 sound.stop();
 });
+
 setTimeout(function () {
 let sound = new Howl({
 	src: ['sounds/'+list[0]+'.mp3'],
