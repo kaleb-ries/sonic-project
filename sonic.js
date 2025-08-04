@@ -1,4 +1,6 @@
-const menu = [];
+let gameMode;
+let game;
+const main = [];
 const Item = (name) => {
 return {name: name};
 }
@@ -13,10 +15,10 @@ console.log('Error: This function only supports the appending of items to an arr
 }
 
 const display = document.getElementById('display');
-var playing = [];
-var startup = false;
-var music;
-var config = {
+let playing = [];
+let startup = false;
+let music;
+let config = {
 volume: {
 speech: 60,
 music: 50
@@ -25,13 +27,50 @@ music: "on",
 rate: 50
 };
 
-let game = Item('game');
+let gameItem = Item('game');
 let settings = Item('settings');
 let help = Item('help');
-Append(menu, game, settings, help);
-game.sub = [];
-let object_picker = Item('object_picker');
-Append(game.sub, object_picker);
+Append(main, gameItem, settings, help);
+gameItem.enter = () => {
+gameMode = true;
+game = {
+name: 'game',
+pos: [0,0,0],
+exec: (key) => {
+switch (key.key) {
+case 'ArrowUp':
+game.pos[1] += 1;
+break;
+case 'ArrowDown':
+game.pos[1] -= 1;
+break;
+case 'ArrowLeft':
+game.pos[0] -= 1;
+break;
+case 'ArrowRight':
+game.pos[0] += 1;
+break;
+}
+if (key.key === 'ArrowUp'|key.key === 'ArrowDown'|key.key === 'ArrowLeft'|key.key === 'ArrowRight') {
+let x = game.pos[0];
+let y = game.pos[1];
+if (x < 0) {
+game.pos[0] = 0;
+} else if (x > 10) {
+game.pos[0] = 10;
+}
+
+if (y < 0) {
+game.pos[1] = 0;
+} else if (y > 10) {
+game.pos[1] = 10;
+}
+playAudio('grid/'+game.pos[0]+'|grid/'+game.pos[1]);
+}
+}
+}
+playAudio('grid/'+game.pos[0]+'|grid/'+game.pos[1]);
+}
 settings.sub = [];
 let speech_volume = Item(() => {
 return "speech_volume|seek/"+config.volume.speech;
@@ -103,10 +142,10 @@ playAudio('seek/'+seek);
 }
 Append(speaking_rate.sub, rate);
 
-var item = 0;
-var seek = 0;
-var level = menu;
-var root = [];
+let item = 0;
+let seek = 0;
+let level = main;
+let root = [];
 function opening() {
 if (config.music === "on") {
 music = new Howl({
@@ -122,6 +161,18 @@ playAudio(level[item].name);
 
 document.addEventListener('keyup', (key) => {
 if (startup) {
+if (key.key === 'Backspace') {
+level = main;
+item = 0;
+if (gameMode) {
+gameMode = false;
+game = null;
+}
+playAudio(level[item].name);
+} else {
+if (gameMode) {
+game.exec(key);
+} else{
 switch (key.key) {
 case 'Control':
 playing.forEach((sound) => {
@@ -166,11 +217,6 @@ break;
 case ' ':
 playAudio(level[item].name);
 break;
-case 'Backspace':
-level = menu;
-item = 0;
-playAudio(level[item].name);
-break;
 case 'Home':
 item = 0;
 playAudio(level[item].name);
@@ -192,9 +238,10 @@ item > 4 ?
 playAudio(level[item].name);
 break;
 }
+}
+}
 } else {
 if (key.key === 'Enter') {
-// alert("Enter pressed");
 opening();
 startup = true;
 }
@@ -236,7 +283,7 @@ seek = 0;
 }
 function playAudio(path, extra) {
 
-var list;
+let list;
 if (typeof path === "function") {
 list = path().split("|");
 } else {
