@@ -50,10 +50,17 @@ break;
 case 'ArrowRight':
 game.pos[0] += 1;
 break;
+case '.':
+game.pos[2] -= 1;
+break;
+case '/':
+game.pos[2] += 1;
+break;
 }
-if (key.key === 'ArrowUp'|key.key === 'ArrowDown'|key.key === 'ArrowLeft'|key.key === 'ArrowRight') {
+if (key.key === 'ArrowUp'|key.key === 'ArrowDown'|key.key === 'ArrowLeft'|key.key === 'ArrowRight'|key.key === '.'|key.key === '/') {
 let x = game.pos[0];
 let y = game.pos[1];
+let z = game.pos[2];
 if (x < 0) {
 game.pos[0] = 0;
 } else if (x > 10) {
@@ -65,11 +72,16 @@ game.pos[1] = 0;
 } else if (y > 10) {
 game.pos[1] = 10;
 }
-playAudio('grid/'+game.pos[0]+'|grid/'+game.pos[1]);
+if (z < 0) {
+game.pos[2] = 0;
+} else if (z > 10) {
+game.pos[2] = 10;
+}
+playAudio(`grid/${game.pos[0]}|grid/${game.pos[1]}|grid/${game.pos[2]}`);
 }
 }
 }
-playAudio('grid/'+game.pos[0]+'|grid/'+game.pos[1]);
+playAudio(`grid/${game.pos[0]}|grid/${game.pos[1]}|grid/${game.pos[2]}`);
 }
 settings.sub = [];
 let speech_volume = Item(() => {
@@ -281,8 +293,7 @@ seek = 0;
 }
 
 }
-function playAudio(path, extra) {
-
+function playAudio(path) {
 let list;
 if (typeof path === "function") {
 list = path().split("|");
@@ -306,7 +317,7 @@ sound.once('end', () => {
 playing.splice(playing.findIndex(s => s === sound));
 list.shift();
 if (list[0]) {
-playAudio(list[0]);
+playAudio(list.join("|"));
 }
 });
 }, 1);

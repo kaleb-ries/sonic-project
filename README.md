@@ -18,6 +18,7 @@ In order to start the interface when the html file is running in the browser, th
 * End goes to the bottom of the menu
 * Page up goes up in a menu by 5 items
 * Page down goes down in a menu by 5 items
+
 NOTE: These commands are specifically for the main menu; when you are in a game, the commands will be customized. The backspace command is the only current command that has the same function in the main menu and every game
 
 # Issues
