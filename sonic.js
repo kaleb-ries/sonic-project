@@ -10,7 +10,7 @@ item.forEach((i) => {
 data.push(i);
 });
 } else {
-console.log('Error: This function only supports the appending of items to an array');
+console.log('Error: Append function only supports arrays as the data being appended to');
 }
 }
 
@@ -36,8 +36,50 @@ gameMode = true;
 game = {
 name: 'game',
 pos: [0,0,0],
+objects: [],
+getPos: () => {
+let stringPos = "";
+let object = game.objects.find(o => o.pos.join(",") === game.pos.join(","));
+if (object) {
+stringPos += object.name+"|";
+}
+let index = 0;
+game.pos.forEach((p) => {
+stringPos += "grid/"+p;
+if (index < (game.pos.length - 1)) {
+stringPos += "|";
+}
+index += 1;
+});
+return stringPos;
+},
 exec: (key) => {
 switch (key.key) {
+case 'm':
+game.menu = [];
+level = game.menu;
+root = [];
+item = 0;
+game.menuActive = true;
+let obj = Item('object_picker');
+Append(game.menu, obj);
+obj.sub = [];
+let spawn = Item('spawn');
+let checkpoint = Item('checkpoint');
+let deathpoint = Item('deathpoint');
+let winpoint = Item('winpoint');
+let platform = Item('platform');
+let trampoline = Item('trampoline');
+Append(obj.sub, spawn, checkpoint, winpoint, deathpoint, platform, trampoline);
+let pos = game.pos.slice();
+obj.sub.forEach((o) => {
+o.enter = () => {
+game.objects.push({name: o.name, pos: pos});
+game.menuActive = false;
+}
+});
+playAudio(level[item].name);
+break;
 case 'ArrowUp':
 game.pos[1] += 1;
 break;
@@ -77,11 +119,29 @@ game.pos[2] = 0;
 } else if (z > 10) {
 game.pos[2] = 10;
 }
-playAudio(`grid/${game.pos[0]}|grid/${game.pos[1]}|grid/${game.pos[2]}`);
+// playAudio(`grid/${game.pos[0]}|grid/${game.pos[1]}|grid/${game.pos[2]}`);
+playAudio(game.getPos());
 }
 }
 }
-playAudio(`grid/${game.pos[0]}|grid/${game.pos[1]}|grid/${game.pos[2]}`);
+let obj = Item('object_picker');
+game.menu = [];
+Append(game.menu, obj);
+obj.sub = [];
+let spawn = Item('spawn');
+let checkpoint = Item('checkpoint');
+let deathpoint = Item('deathpoint');
+let winpoint = Item('winpoint');
+let platform = Item('platform');
+let trampoline = Item('trampoline');
+Append(obj.sub, spawn, checkpoint, winpoint, deathpoint, platform, trampoline);
+obj.sub.forEach((o) => {
+o.enter = () => {
+game.menuActive = false;
+}
+});
+// playAudio(`grid/${game.pos[0]}|grid/${game.pos[1]}|grid/${game.pos[2]}`);
+playAudio(game.getPos());
 }
 settings.sub = [];
 let speech_volume = Item(() => {
@@ -175,6 +235,7 @@ document.addEventListener('keyup', (key) => {
 if (startup) {
 if (key.key === 'Backspace') {
 level = main;
+root = [];
 item = 0;
 if (gameMode) {
 gameMode = false;
@@ -183,73 +244,13 @@ game = null;
 playAudio(level[item].name);
 } else {
 if (gameMode) {
+if (game.menu && game.menuActive) {
+menuNavigation(key);
+} else {
 game.exec(key);
-} else{
-switch (key.key) {
-case 'Control':
-playing.forEach((sound) => {
-sound.stop();
-});
-break;
-case 'ArrowUp':
-shift("up");
-break;
-case 'ArrowDown':
-shift("down");
-break;
-case 'ArrowLeft':
-if (level[item].row) {
-level[item].row("left");
 }
-break;
-case 'ArrowRight':
-if (level[item].row) {
-level[item].row("right");
-}
-break;
-case 'Enter':
-if (level[item].enter) {
-level[item].enter();
-}
-if (level[item].sub) {
-root.push(level);
-level = level[item].sub;
-item = 0;
-playAudio(level[item].name);
-}
-break;
-case 'Escape':
-if (root.length !== 0) {
-level = root[root.length - 1];
-root.pop();
-item = 0;
-playAudio(level[item].name);
-}
-break;
-case ' ':
-playAudio(level[item].name);
-break;
-case 'Home':
-item = 0;
-playAudio(level[item].name);
-break;
-case 'End':
-item = level.length - 1;
-playAudio(level[item].name);
-break;
-case 'PageDown':
-(level.length-1)-item > 4 ?
-	item += 5 :
-	item = level.length - 1
-playAudio(level[item].name);
-break;
-case 'PageUp':
-item > 4 ?
-	item -= 5 :
-	item = 0
-playAudio(level[item].name);
-break;
-}
+} else {
+menuNavigation(key);
 }
 }
 } else {
@@ -325,3 +326,74 @@ playAudio(list.join("|"));
 }
 
 
+function menuNavigation(key) {
+switch (key.key) {
+case 'Control':
+playing.forEach((sound) => {
+sound.stop();
+});
+break;
+case 'ArrowUp':
+shift("up");
+break;
+case 'ArrowDown':
+shift("down");
+break;
+case 'ArrowLeft':
+if (level[item].row) {
+level[item].row("left");
+}
+break;
+case 'ArrowRight':
+if (level[item].row) {
+level[item].row("right");
+}
+break;
+case 'Enter':
+if (level[item].enter) {
+level[item].enter();
+}
+if (level[item].sub) {
+root.push(level);
+level = level[item].sub;
+item = 0;
+playAudio(level[item].name);
+}
+break;
+case 'Escape':
+if (root.length === 0) {
+if (game && game.menuActive) {
+game.menuActive = false;
+}
+} else {
+level = root[root.length - 1];
+root.pop();
+item = 0;
+playAudio(level[item].name);
+}
+break;
+case ' ':
+playAudio(level[item].name);
+break;
+case 'Home':
+item = 0;
+playAudio(level[item].name);
+break;
+case 'End':
+item = level.length - 1;
+playAudio(level[item].name);
+break;
+case 'PageDown':
+(level.length-1)-item > 4 ?
+	item += 5 :
+	item = level.length - 1
+playAudio(level[item].name);
+break;
+case 'PageUp':
+item > 4 ?
+	item -= 5 :
+	item = 0
+playAudio(level[item].name);
+break;
+}
+}
